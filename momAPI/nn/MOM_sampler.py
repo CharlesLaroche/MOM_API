@@ -19,7 +19,7 @@ class momsampler(Sampler):
     """
     def __init__(self, model, dataset, K,
                  loss=torch.nn.MSELoss(reduction='elementwise_mean'),
-                 random_state=True , m = None):
+                 random_state=True , m = None, cuda = False):
         """
         To compute the median block we need a dataset, a model, K and a loss
 
@@ -37,6 +37,7 @@ class momsampler(Sampler):
         self.batch_size = self.n_samples // K
         self.loss = loss
         self.random_state = random_state
+        self.cuda = cuda
 
     def __iter__(self):
         if self.K == 1:
@@ -50,6 +51,8 @@ class momsampler(Sampler):
                                                  batch_size = self.batch_size, drop_last = True)
         for inputs, labels, indexes in DataLoader:
             with torch.no_grad():
+                if self.cuda:
+                    inputs, labels = inputs.cuda(), labels.cuda()
                 blocks.append(indexes)
                 mean = self.loss(self.model(inputs.float()) , labels).item()
                 means_blocks.append(mean)

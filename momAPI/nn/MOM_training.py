@@ -56,7 +56,7 @@ class mom_net():
         self.K = len(data_train) // self.batch_size
         self.sampler = momsampler(self.model, data_train,
                                   self.K, loss = self.loss,
-                                  random_state = True)
+                                  random_state = True, cuda = cuda)
         
 
         if val:
