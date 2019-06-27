@@ -1,6 +1,6 @@
-from .MOM_ElasticNet import mom_elasticnet
-from .MOM_LASSO import mom_lasso
+from .MOM_ElasticNet import MomElasticNet, MomElasticNetCV
+from .MOM_LASSO import MomLasso
+from .MOM_matching_pursuit import MomMatchingPursuit
 
-print("In Linear_models __init__")
-__all__ = ['mom_elasticnet',
-           'mom_lasso']
+__all__ = ['MomElasticNet', 'MomElasticNetCV',
+           'MomLasso', 'MomMatchingPursuit']

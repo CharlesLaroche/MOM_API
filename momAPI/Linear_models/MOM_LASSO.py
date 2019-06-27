@@ -1,60 +1,47 @@
 # Author : Charles Laroche
-# Last update : 03/04/2019
+# Last update : 27/06/2019
 
 from ..procedure.procedure_MOM import *
 import numpy as np
-from math import *
-import time
+from sklearn.metrics import mean_squared_error
+from sklearn.base import BaseEstimator
 
 
-class mom_lasso():
+class MomLasso(BaseEstimator):
+    """
+    Computation of the MOM version of the LASSO estimator given lamb k and.
+
+    Parameters : - k : Number of blocks in which we split our database
+                - lamb : penalization parameter in the lasso
+                - iter_max : number of iteration in the gradient descent
+                - hist : frequency of occurence in the median block in the n_hist last iteration
 
     """
-    Computation of the MOM version of the LASSO estimator given lamb K and.
 
-    """
-
-    def __init__(self, K, lamb=1, iter_max=200):
-        """
-        K : Number of blocks in which we split our database 
-        lamb : penalization parameter in the lasso
-        iter_max : number of iteration in the gradient descent
-        hist : frequency of occurence in the median block in the n_hist last iteration
-        """
+    def __init__(self, k, lamb=1, iter_max=200):
+        super(MomLasso, self).__init__()
         self.hist = []
-        self.params = {'K': K, 'iter_max': iter_max, 'lamb': lamb}
+        self.params = {'k': k, 'iter_max': iter_max, 'lamb': lamb}
+        self.t = None
 
-    def set_params(**params):
-        """
-        This function allows the user to change K , lamb , iter_max of the estimator
-
-        """
-        for key, item in params.item():
-            try:
-                self.params[key] = item
-            except:
-                raise Exception('{} not in params list'.format(key))
-
-    def fit(self, X, Y, method="ADMM", step_size=0.0001, initialize="zero", n_hist=50):
+    def fit(self, x, y, method="ADMM", step_size=0.0001, initialize="zero", n_hist=50):
         """
         Training phase.
 
-        method : method to fit the estimator (ADMM, SUBGRAD : subgradient , ISTA and FISTA)
+        Parameters : - method : method to fit the estimator (ADMM, SUBGRAD : subgradient , ISTA and fISTA)
 
-        step_size : step_size of the gradient descent (not used in every method)
+                     - step_size : step_size of the gradient descent (not used in every method)
 
-        initialize : initialisation of the coefficients (zero for a beta equal to 0 , ones for a beta with all coefficients
-        equal to 1 or random for random coefficients between (0,1))
+                     - initialize : initialisation of the coefficients (zero for a beta equal to 0 , ones for a beta
+                      with all coefficients equal to 1 or random for random coefficients between (0,1))
 
-        n_hist : the number of step we want to count the frequency of occurence in the median block
+                     - n_hist : the number of step we want to count the frequency of occurrence in the median block
 
         """
-        self.hist = []
-        n, p = np.shape(X)
-        j = n // self.params['K']
 
-        if initialize == "zero":
-            t = np.zeros(p)
+        self.hist = []
+        n, p = np.shape(x)
+        t = np.zeros(p)
 
         if initialize == "random":
             t = np.random.rand(p)
@@ -63,9 +50,8 @@ class mom_lasso():
             t = np.ones(p)
 
         if method == "ADMM":
-            if initialize == "zero":
-                z = np.zeros(p)
-                u = np.zeros(p)
+            z = np.zeros(p)
+            u = np.zeros(p)
 
             if initialize == "random":
                 z = np.random.rand(p)
@@ -75,20 +61,16 @@ class mom_lasso():
                 z = np.ones(p)
                 u = np.ones(p)
 
-            rhoM = 5 * np.identity(p)
-
+            rho = 5 * np.identity(p)
             for l in range(self.params['iter_max']):
-
-                k = MOM(P_quadra(X, Y, t), self.params['K'])[1]
-
+                k = mom(p_quadra(x, y, t), self.params['k'])[1]
                 if l > self.params['iter_max']-n_hist:
                     self.hist += k.tolist()
 
-                Xk = X[k]
-                Yk = Y[k]
+                xk = x[k]
+                yk = y[k]
 
-                t = np.linalg.solve((Xk.T) @ Xk + rhoM,
-                                    (Xk.T) @ Yk + 5 * z - u)
+                t = np.linalg.solve(xk.T @ xk + rho, xk.T @ yk + 5 * z - u)
                 z = soft_thresholding(self.params["lamb"] / 5, t + u / 5)
                 u = u + 5 * (t - z)
 
@@ -98,59 +80,58 @@ class mom_lasso():
             mu = 0.9
             for l in range(self.params['iter_max']):
 
-                k = MOM(P_quadra(X, Y, t), self.params['K'])[1]
+                k = mom(p_quadra(x, y, t), self.params['k'])[1]
                 if l > self.params['iter_max']-n_hist:
                     self.hist += k.tolist()
 
-                Xk = X[k]
-                Yk = Y[k]
+                xk = x[k]
+                yk = y[k]
 
                 # Beginning of backtracking with c = 1/2
-                gamma = 1
+                gamma_ = 1
                 t_prev = t
-                F = quadra_loss(Xk, Yk, t_prev)
+                f = quadra_loss(xk, yk, t_prev)
 
                 t = soft_thresholding(
-                    self.params["lamb"] * gamma, t - gamma * grad(Xk, Yk, t))
-                delta = quadra_loss(Xk, Yk, t) - F - grad(Xk, Yk, t_prev).T * (
-                    t - t_prev) - (1 / (2 * gamma)) * np.linalg.norm(t - t_prev) ** 2
+                    self.params["lamb"] * gamma_, t - gamma_ * grad(xk, yk, t))
+                delta = quadra_loss(xk, yk, t) - f - grad(xk, yk, t_prev).T * (
+                    t - t_prev) - (1 / (2 * gamma_)) * np.linalg.norm(t - t_prev) ** 2
 
                 while delta > 1e-3:
-                    gamma *= mu
+                    gamma_ *= mu
                     t = soft_thresholding(
-                        self.params["lamb"] * gamma, t_prev - gamma * grad(Xk, Yk, t_prev))
-                    delta = quadra_loss(Xk, Yk, t) - F - grad(Xk, Yk, t_prev).T * (
-                        t - t_prev) - (1 / (2 * gamma))*np.linalg.norm(t - t_prev) ** 2
+                        self.params["lamb"] * gamma_, t_prev - gamma_ * grad(xk, yk, t_prev))
+                    delta = quadra_loss(xk, yk, t) - f - grad(xk, yk, t_prev).T * (
+                        t - t_prev) - (1 / (2 * gamma_))*np.linalg.norm(t - t_prev) ** 2
 
             self.t = t
 
         if method == "FISTA":
+            z = t
             mu = 0.9
             for l in range(self.params['iter_max']):
-
-                k = MOM(P_quadra(X, Y, t), self.params['K'])[1]
+                k = mom(p_quadra(x, y, t), self.params['k'])[1]
                 if l > self.params['iter_max']-n_hist:
                     self.hist += k.tolist()
 
-                Xk = X[k]
-                Yk = Y[k]
+                xk = x[k]
+                yk = y[k]
 
                 # Beginning of backtracking with c = 1/2
-                gamma = 1
+                gamma_ = 1
                 t_prev = t
-                F = quadra_loss(Xk, Yk, t_prev)
+                f = quadra_loss(xk, yk, t_prev)
 
-                t = soft_thresholding(
-                    self.params["lamb"] * gamma, z - gamma * grad(Xk, Yk, z))
-                delta = quadra_loss(Xk, Yk, t) - F - grad(Xk, Yk, t_prev).T * (
-                    t - t_prev) - (1 / (2 * gamma)) * np.linalg.norm(t - t_prev) ** 2
+                t = soft_thresholding(self.params["lamb"] * gamma_, z - gamma_ * grad(xk, yk, z))
+                delta = quadra_loss(xk, yk, t) - f - grad(xk, yk, t_prev).T * (
+                    t - t_prev) - (1 / (2 * gamma_)) * np.linalg.norm(t - t_prev) ** 2
 
                 while delta > 1e-3:
-                    gamma *= mu
+                    gamma_ *= mu
                     t = soft_thresholding(
-                        self.params["lamb"] * gamma, z - gamma * grad(Xk, Yk, z))
-                    delta = quadra_loss(Xk, Yk, t) - F - grad(Xk, Yk, t_prev).T * (
-                        t - t_prev) - (1 / (2 * gamma)) * np.linalg.norm(t - t_prev) ** 2
+                        self.params["lamb"] * gamma_, z - gamma_ * grad(xk, yk, z))
+                    delta = quadra_loss(xk, yk, t) - f - grad(xk, yk, t_prev).T * (
+                        t - t_prev) - (1 / (2 * gamma_)) * np.linalg.norm(t - t_prev) ** 2
 
                 z = t + (l / (l + 3)) * (t - t_prev)
 
@@ -159,29 +140,24 @@ class mom_lasso():
         if method == "SUBGRAD":
 
             for l in range(self.params['iter_max']):
-                k = MOM(P_quadra(X, Y, t), self.params['K'])[1]
+                k = mom(p_quadra(x, y, t), self.params['k'])[1]
                 if l > self.params['iter_max']-n_hist:
                     self.hist += k.tolist()
 
-                Xk = X[k]
-                Yk = Y[k]
+                xk = x[k]
+                yk = y[k]
 
                 t = t - step_size * \
-                    subgrad(Xk, Yk, t, self.params["lamb"]) / np.sqrt(l + 1)
+                    subgrad(xk, yk, t, self.params["lamb"]) / np.sqrt(l + 1)
 
             self.t = t
 
-    def predict(self, X):
-        return X @ self.t
+    def predict(self, x):
+        return x @ self.t
 
-    def score(self, X, Y):
-        """
-        mean squared error
-        """
-        return quadra_loss(X, Y, self.t)
+    def score(self, x, y):
+        """ MSE """
+        return mean_squared_error(self.predict(x), y)
 
-    def get_params(deep=False):
-        return self.params
-
-    def coefs(self):
+    def coefs_(self):
         return list(np.array(self.t))

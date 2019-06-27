@@ -1,11 +1,15 @@
-from .MOM_sampler import momsampler
-from .indexed_dataset import Dataset
-from .MOM_training import mom_net
-from .utilities import accuracy, plot_confusion_matrix
+# Author : Charles Laroche
+# Last update : 27/06/2019
 
-print("In nn __init__")
-__all__ = ["momsampler",
+from .MOM_sampler import MomSampler
+from .indexed_dataset import Dataset
+from .MOM_training import MomTraining
+from .utilities import accuracy, plot_confusion_matrix
+from .classical_nn_training import ClassicalTraining
+
+__all__ = ["MomSampler",
            "Dataset",
-           "mom_net",
+           "MomTraining",
            "accuracy",
-           "plot_confusion_matrix"]
+           "plot_confusion_matrix",
+           "ClassicalTraining"]

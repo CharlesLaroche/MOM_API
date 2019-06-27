@@ -1,2 +1,6 @@
-from .MOM_CV import cross_validation_V_fold
-print("In Cross_validation __init__")
+# Author : Charles Laroche
+# Last update : 27/06/2019
+
+from .MOM_CV import cross_validation_v_fold
+
+__all__ = ['cross_validation_v_fold']

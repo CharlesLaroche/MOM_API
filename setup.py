@@ -14,7 +14,7 @@ setup(
     description="",
     url="https://github.com/CharlesLaroche/MOM_API",
     license="",
-    install_requires=['numpy', 'torch', 'sklearn'],
+    install_requires=['numpy', 'torch', 'sklearn', 'matplotlib'],
     keywords="MOM machine-learning deep-learning nn lasso elasticnet cross-validation svm",
     packages=find_packages(),
     include_package_data=True,

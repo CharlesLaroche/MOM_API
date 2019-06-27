@@ -5,47 +5,35 @@
 import torch
 import itertools
 import numpy as np
-from random import *
 import matplotlib.pyplot as plt
 from sklearn.metrics import accuracy_score
 
 plt.style.use('seaborn-darkgrid')
 
 
-def accuracy(model, data):
+def accuracy(model, data, device='cpu'):
     """
     Compute the accuracy of a classification model, for instance it only works for binary classification
 
     """
-    data_x = torch.stack([data[i][0] for i in range(len(data))]).float()
-    data_y = torch.stack([data[i][1] for i in range(len(data))]).long()
-
-    X = torch.Tensor(data_x)
-    Y = torch.LongTensor(data_y)
-    
-    #if torch.cuda.is_available():
-        #X = X.cuda()
-        #Y = Y.cuda()
+    data_x = torch.stack([data[i][0] for i in range(len(data))]).float().to(device)
+    data_y = torch.stack([data[i][1] for i in range(len(data))]).long().to(device)
 
     if len(np.unique(data_y)) == 2:
-        oupt = (model(X).cpu().detach().numpy().flatten() > 0.5) * 1
-        return accuracy_score(Y.cpu().detach().numpy().flatten(), oupt)
+        output = (model(data_x).cpu().detach().numpy().flatten() > 0.5) * 1
+        return accuracy_score(data_y.cpu().detach().numpy().flatten(), output)
 
     else:
-        outp = np.zeros(len(Y))
-        Y_pred = model(X).cpu().detach().numpy()
-        for i,elem in enumerate(Y_pred):
-            outp[i] = np.argmax(elem)
+        output = np.zeros(len(data_y.cpu().detach().numpy()))
+        y_pred = model(data_x).cpu().detach().numpy()
+        for i, elem in enumerate(y_pred):
+            output[i] = np.argmax(elem)
             
-        return accuracy_score(Y.cpu().detach().numpy().flatten(), outp)
-        
+        return accuracy_score(data_y.cpu().detach().numpy().flatten(), output)
 
 
-# sklearn function :
-def plot_confusion_matrix(cm, classes,
-                          normalize=False,
-                          title='Confusion matrix',
-                          cmap=plt.cm.Blues):
+def plot_confusion_matrix(cm, classes, normalize=False,
+                          title='Confusion matrix', cmap=plt.cm.Blues):
     """
     This function prints and plots the confusion matrix.
     Normalization can be applied by setting `normalize=True`.

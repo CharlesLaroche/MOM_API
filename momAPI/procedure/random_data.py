@@ -1,6 +1,5 @@
 import numpy as np
 import numpy.random as alea
-import random as rd
 
 
 def create_t_0(n, sparsity):
@@ -23,37 +22,30 @@ def data1(n_samples, t, sigma):
     n_features = np.shape(t)[0]
     cov = np.identity(n_features)
 
-    X = alea.multivariate_normal(np.zeros(n_features), cov, size=n_samples)
-    Y = X @ t + sigma * alea.randn(n_samples)
+    x = alea.multivariate_normal(np.zeros(n_features), cov, size=n_samples)
+    y = x @ t + sigma * alea.randn(n_samples)
 
-    return Y, X
+    return y, x
 
 
-def data2(n_outliers, n_features, type_outliers=1, beta=1, rho=1):
+def data2(n_outliers, n_features, type_outliers=1):
 
     if type_outliers == 1:
-
-        Y = np.ones(n_outliers)
-        X = np.ones((n_outliers, n_features))
+        y = np.ones(n_outliers)
+        x = np.ones((n_outliers, n_features))
 
     elif type_outliers == 2:
-
-        Y = 10000 * np.ones(n_outliers)
-        X = np.ones((n_outliers, n_features))
+        y = 10000 * np.ones(n_outliers)
+        x = np.ones((n_outliers, n_features))
 
     elif type_outliers == 3:
-
-        Y = np.random.randint(2, size=n_outliers)
-        X = np.random.rand(n_outliers, n_features)
+        y = np.random.randint(2, size=n_outliers)
+        x = np.random.rand(n_outliers, n_features)
 
     else:
+        raise AttributeError('type_outliers must be 1,2 or 3')
 
-        cov = np.identity(n_features)
-
-        X = feature_mat(n_features, n_outliers, rho)
-        Y = X.dot(beta) + sigma * alea.randn(n_samples)
-
-    return Y, X
+    return y, x
 
 
 def data3(n_heavy_tail, beta, deg=2):
@@ -61,21 +53,21 @@ def data3(n_heavy_tail, beta, deg=2):
     n_features = beta.size
     cov = np.identity(n_features)
 
-    X = alea.multivariate_normal(np.zeros(n_features), cov, size=n_heavy_tail)
-    Y = X.dot(beta) + np.random.standard_t(deg, size=n_heavy_tail)
+    x = alea.multivariate_normal(np.zeros(n_features), cov, size=n_heavy_tail)
+    y = x.dot(beta) + np.random.standard_t(deg, size=n_heavy_tail)
 
-    return Y, X
+    return y, x
 
 
-def data_merge(Y1, X1, Y2, X2):
+def data_merge(y1, x1, y2, x2):
 
-    Y = np.concatenate((Y1, Y2), axis=0)
-    X = np.concatenate((X1, X2), axis=0)
-    Y = np.reshape(Y, (Y.shape[0], 1))
-    R = np.concatenate((Y, X), axis=1)
-    alea.shuffle(R)
+    y = np.concatenate((y1, y2), axis=0)
+    x = np.concatenate((x1, x2), axis=0)
+    y = np.reshape(y, (y.shape[0], 1))
+    r = np.concatenate((y, x), axis=1)
+    alea.shuffle(r)
 
-    Y = R[:, 0]
-    X = R[:, 1:]
+    y = r[:, 0]
+    x = r[:, 1:]
 
-    return Y, X
+    return y, x
