@@ -1,4 +1,4 @@
-# MOM_API
+# Machine Learning with Median-Of-Mean (MOM) estimators
 Statistical/Machine-Learning project under the supervision of Guillaume Lecué
 
 ## Content
