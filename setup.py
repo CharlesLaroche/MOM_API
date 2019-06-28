@@ -9,9 +9,9 @@ def fread(fname):
 setup(
     name="momAPI",
     version=0.1,
-    author="Charles Laroche",
+    author="Corentin Jaumin, Tom Guedon, Charles Laroche",
     author_email="charles.laroche@ensae.fr",
-    description="",
+    description="MOM adaptation of machine-learning algorithms",
     url="https://github.com/CharlesLaroche/MOM_API",
     license="",
     install_requires=['numpy', 'torch', 'sklearn', 'matplotlib'],
