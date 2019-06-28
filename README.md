@@ -41,3 +41,8 @@ MOM_nn = MOM_training.MomTraining(nn_ , optimizer , loss_ , n_epochs=100 , batch
 MOM_nn.fit(data_train, data_val=data_val)  # Training
 MOM_nn.model(X)  # Prediction
 ```
+## Contributors
+
+Corentin Jaumain
+Tom Guedon
+Charles Laroche
