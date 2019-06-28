@@ -1,5 +1,5 @@
 # Machine Learning with Median-Of-Mean (MOM) estimators
-Statistical/Machine-Learning project under the supervision of Guillaume Lecué
+Statistical/Machine-Learning project under the supervision of Guillaume Lecué (http://lecueguillaume.github.io)
 
 ## Content
 For the moment, mom_API contains the MOM adaptation of: LASSO, ElasticNet, Matching Pursuit, Cross-validation, Neural networks (on PyTorch).
