@@ -43,6 +43,4 @@ MOM_nn.model(X)  # Prediction
 ```
 ## Contributors
 
-Corentin Jaumain
-Tom Guedon
-Charles Laroche
+Corentin Jaumain / Tom Guedon / Charles Laroche
