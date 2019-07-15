@@ -17,7 +17,7 @@ model.fit(X, Y)  # training
 model.predict(X) # prediction
 model.score(X, Y) # score (MSE)
 ```
-For regression tool, score = MSE and for classification, score = accuracy.
+For regression tools, score = MSE and for classification, score = accuracy.
 #### Deep-learning models
 
 ```python
