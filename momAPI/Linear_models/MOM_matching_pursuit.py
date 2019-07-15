@@ -16,7 +16,7 @@ class MomMatchingPursuit(BaseEstimator):
 
     def __init__(self, k):
         super(MomMatchingPursuit, self).__init__()
-        self.params = {'k': k}
+        self.k = k
         self.var = None
         self.beta = None
         self.coefs = None
@@ -39,14 +39,14 @@ class MomMatchingPursuit(BaseEstimator):
 
         for l in range(m):
             # Block selection
-            k = mom(np.square(r), self.params['k'])[1]
+            k = mom(np.square(r), self.k)[1]
             xk = x[k]
             rk = r[k]
 
             c = xk.T @ rk
 
             # Selection of the variable most correlated with the residual
-            j = np.argmax(abs(c[a_c]))
+            j = a_c[np.argmax(abs(c[a_c]))]
             j = a_c[j]
             a.append(j)
             a_c.remove(j)
@@ -57,12 +57,11 @@ class MomMatchingPursuit(BaseEstimator):
             for i in range(iter_max):
 
                 # Block selection
-                k = mom(np.square(r), self.params['k'])[1]
+                k = mom(np.square(r), self.k)[1]
                 xk = x[k]
                 yk = y[k]
 
-                beta_l = beta_l - (step_size / np.sqrt(i + 1)
-                                   ) * grad(xk[:, a], yk, beta_l)
+                beta_l -= (step_size / np.sqrt(i + 1)) * grad(xk[:, a], yk, beta_l)
 
                 r = y - x[:, a] @ beta_l
 
