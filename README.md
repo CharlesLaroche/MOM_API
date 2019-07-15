@@ -8,7 +8,7 @@ For the moment, mom_API contains the MOM adaptation of: LASSO, ElasticNet, Match
 First, download the folder mom_API, for the moment we did not send it to pip.
 
 #### Machine-learning models
-For ElasticNet (same for Lasso):
+For ElasticNet (same for Lasso or SVM):
 ```python
 from momAPI.Linear_models.MOM_ElasticNet import MomElasticNet
 
