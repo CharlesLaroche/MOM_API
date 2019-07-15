@@ -20,8 +20,10 @@ class MomLasso(BaseEstimator):
 
     def __init__(self, k, lamb=1, iter_max=200):
         super(MomLasso, self).__init__()
+        self.k = k
+        self.iter_max = iter_max
+        self.lamb = lamb
         self.hist = []
-        self.params = {'k': k, 'iter_max': iter_max, 'lamb': lamb}
         self.t = None
 
     def fit(self, x, y, method="ADMM", step_size=0.0001, initialize="zero", n_hist=50):
@@ -29,7 +31,8 @@ class MomLasso(BaseEstimator):
         Training phase.
 
         Parameters : - method : method to fit the estimator (ADMM, SUBGRAD : subgradient , ISTA and fISTA)
-
+er(MomLasso, self).__init__()
+        self.hist = []
                      - step_size : step_size of the gradient descent (not used in every method)
 
                      - initialize : initialisation of the coefficients (zero for a beta equal to 0 , ones for a beta
@@ -62,26 +65,26 @@ class MomLasso(BaseEstimator):
                 u = np.ones(p)
 
             rho = 5 * np.identity(p)
-            for l in range(self.params['iter_max']):
-                k = mom(p_quadra(x, y, t), self.params['k'])[1]
-                if l > self.params['iter_max']-n_hist:
+            for l in range(self.iter_max):
+                k = mom(p_quadra(x, y, t), self.k)[1]
+                if l > self.iter_max-n_hist:
                     self.hist += k.tolist()
 
                 xk = x[k]
                 yk = y[k]
 
                 t = np.linalg.solve(xk.T @ xk + rho, xk.T @ yk + 5 * z - u)
-                z = soft_thresholding(self.params["lamb"] / 5, t + u / 5)
+                z = soft_thresholding(self.lamb / 5, t + u / 5)
                 u = u + 5 * (t - z)
 
             self.t = t
 
         if method == "ISTA":
             mu = 0.9
-            for l in range(self.params['iter_max']):
+            for l in range(self.iter_max):
 
-                k = mom(p_quadra(x, y, t), self.params['k'])[1]
-                if l > self.params['iter_max']-n_hist:
+                k = mom(p_quadra(x, y, t), self.k)[1]
+                if l > self.iter_max-n_hist:
                     self.hist += k.tolist()
 
                 xk = x[k]
@@ -93,14 +96,14 @@ class MomLasso(BaseEstimator):
                 f = quadra_loss(xk, yk, t_prev)
 
                 t = soft_thresholding(
-                    self.params["lamb"] * gamma_, t - gamma_ * grad(xk, yk, t))
+                    self.lamb * gamma_, t - gamma_ * grad(xk, yk, t))
                 delta = quadra_loss(xk, yk, t) - f - grad(xk, yk, t_prev).T * (
                     t - t_prev) - (1 / (2 * gamma_)) * np.linalg.norm(t - t_prev) ** 2
 
                 while delta > 1e-3:
                     gamma_ *= mu
                     t = soft_thresholding(
-                        self.params["lamb"] * gamma_, t_prev - gamma_ * grad(xk, yk, t_prev))
+                        self.lamb * gamma_, t_prev - gamma_ * grad(xk, yk, t_prev))
                     delta = quadra_loss(xk, yk, t) - f - grad(xk, yk, t_prev).T * (
                         t - t_prev) - (1 / (2 * gamma_))*np.linalg.norm(t - t_prev) ** 2
 
@@ -109,9 +112,9 @@ class MomLasso(BaseEstimator):
         if method == "FISTA":
             z = t
             mu = 0.9
-            for l in range(self.params['iter_max']):
-                k = mom(p_quadra(x, y, t), self.params['k'])[1]
-                if l > self.params['iter_max']-n_hist:
+            for l in range(self.iter_max):
+                k = mom(p_quadra(x, y, t), self.k)[1]
+                if l > self.iter_max-n_hist:
                     self.hist += k.tolist()
 
                 xk = x[k]
@@ -122,14 +125,14 @@ class MomLasso(BaseEstimator):
                 t_prev = t
                 f = quadra_loss(xk, yk, t_prev)
 
-                t = soft_thresholding(self.params["lamb"] * gamma_, z - gamma_ * grad(xk, yk, z))
+                t = soft_thresholding(self.lamb * gamma_, z - gamma_ * grad(xk, yk, z))
                 delta = quadra_loss(xk, yk, t) - f - grad(xk, yk, t_prev).T * (
                     t - t_prev) - (1 / (2 * gamma_)) * np.linalg.norm(t - t_prev) ** 2
 
                 while delta > 1e-3:
                     gamma_ *= mu
                     t = soft_thresholding(
-                        self.params["lamb"] * gamma_, z - gamma_ * grad(xk, yk, z))
+                        self.lamb * gamma_, z - gamma_ * grad(xk, yk, z))
                     delta = quadra_loss(xk, yk, t) - f - grad(xk, yk, t_prev).T * (
                         t - t_prev) - (1 / (2 * gamma_)) * np.linalg.norm(t - t_prev) ** 2
 
@@ -139,16 +142,16 @@ class MomLasso(BaseEstimator):
 
         if method == "SUBGRAD":
 
-            for l in range(self.params['iter_max']):
-                k = mom(p_quadra(x, y, t), self.params['k'])[1]
-                if l > self.params['iter_max']-n_hist:
+            for l in range(self.iter_max):
+                k = mom(p_quadra(x, y, t), self.k)[1]
+                if l > self.iter_max-n_hist:
                     self.hist += k.tolist()
 
                 xk = x[k]
                 yk = y[k]
 
                 t = t - step_size * \
-                    subgrad(xk, yk, t, self.params["lamb"]) / np.sqrt(l + 1)
+                    subgrad(xk, yk, t, self.lamb) / np.sqrt(l + 1)
 
             self.t = t
 

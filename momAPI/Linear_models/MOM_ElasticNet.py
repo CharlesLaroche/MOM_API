@@ -16,7 +16,6 @@ class MomElasticNet(BaseEstimator):
     """
     
     def __init__(self, rho=1.0, lamb=0, k=1, max_iter=50, tol=10e-5):
-        super(MomElasticNet, self).__init__()
         self.rho = rho
         self.lamb = lamb
         self.k = k
