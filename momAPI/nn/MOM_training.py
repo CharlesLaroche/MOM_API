@@ -19,9 +19,7 @@ class MomTraining:
     we split it into batches and trained it on every batches during the epoch.
 
     """
-    def __init__(self, model, optimizer, loss,
-                 n_epochs=10, batch_size=32,
-                 device='cpu', n_hist=30):
+    def __init__(self, model, optimizer, loss, n_epochs=10, batch_size=32, device='cpu', n_hist=30):
         """
         model : a torch model, this is the network we want to fit
 
@@ -54,7 +52,7 @@ class MomTraining:
         self.history = {'loss': [], 'val_loss': [],
                         'acc': [], 'val_acc': [], 'hist': []}
         self.sampler = None
-        self.K = 1
+        self.K = None
         self.device = device
 
     def fit(self, data_train, acc=False, data_val=None):
@@ -79,7 +77,7 @@ class MomTraining:
             running_loss = 0.0
             running_val_loss = 0.0
 
-            if epoch >= self.n_epochs-self.n_hist:
+            if epoch >= self.n_epochs - self.n_hist:
                 self.history['hist'] += list(indexes)
 
             inputs = Variable(inputs.float().to(self.device), requires_grad=True)
@@ -113,12 +111,12 @@ class MomTraining:
                     self.history['val_acc'].append(val_accu)
                     t2 = time.time()
                     print("Epoch n°{} ({}sec) : loss = {}, validation loss = {}, accuracy = {},"
-                          " validation accuracy = {}".format(str(epoch), str((t2-t1) // 1), str(running_loss),
+                          " validation accuracy = {}".format(str(epoch), str((t2 - t1) // 1), str(running_loss),
                                                              str(running_val_loss), str(accu), str(val_accu)))
 
             else:
                 t2 = time.time()
-                print("Epoch n°{} ({}sec) : loss ={}, Accuracy ={}".format(str(epoch), str((t2-t1) // 1),
+                print("Epoch n°{} ({}sec) : loss ={}, Accuracy ={}".format(str(epoch), str((t2 - t1) // 1),
                                                                            str(running_loss), str(accu)))
 
         print("Training finished")
