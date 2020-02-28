@@ -18,23 +18,23 @@ class MomSampler(Sampler):
     First the sampler splits the database into k blocks then computes the loss for each block and selects the indexes of
     the block where the median of the losses is reached
     """
-    def __init__(self, model, dataset, k,
+    def __init__(self, model, data_source, k,
                  loss=nn.MSELoss(reduction='elementwise_mean'),
                  random_state=True, device='cpu'):
         """
-        To compute the median block we need a dataset, a model, k and a loss
+        To compute the median block we need a data_source, a model, k and a loss
 
         model : A torch network
-        dataset : a Pytorch Dataset
+        data_source : a Pytorch Dataset
         k : the number of blocks
         loss : torch loss
         random state : boolean True if we shuffle the indexes, else False
         """
-        super(MomSampler, self).__init__()
+        super(MomSampler, self).__init__(data_source)
         self.model = model
-        self.dataset = dataset
+        self.data_source = data_source
         self.n_samples, self.input_shape = len(
-            self.dataset), np.shape(self.dataset[0][0])
+            self.data_source), np.shape(self.data_source[0][0])
         self.k = k
         self.batch_size = self.n_samples // k
         self.loss = loss
@@ -49,7 +49,7 @@ class MomSampler(Sampler):
         blocks = []
         means_blocks = []
         
-        dataloader = torch.utils.data.DataLoader(self.dataset, shuffle=self.random_state,
+        dataloader = torch.utils.data.DataLoader(self.data_source, shuffle=self.random_state,
                                                  batch_size=self.batch_size, drop_last=True)
         for inputs, labels, indexes in dataloader:
             with torch.no_grad():
